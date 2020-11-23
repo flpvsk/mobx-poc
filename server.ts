@@ -1,33 +1,9 @@
 import { nanoid } from 'nanoid';
+import { LocationInfo, ProductSnapshot } from './models/cart';
 
 async function wait(sec) {
   return new Promise((resolve) => setTimeout(resolve, sec * 1000));
 }
-
-interface ILocationInfo {
-  id: string;
-  lat: number;
-  lng: number;
-  postalCode: string;
-  city: string;
-}
-
-interface ICurrency {
-  code: string;
-  symbol: string;
-}
-
-export interface IPrice {
-  value: number;
-  currency: ICurrency;
-}
-
-interface IProduct {
-  id: string;
-  name: string;
-  price: IPrice;
-}
-
 function randomString(n: number) {
   let s = '';
   while (n > 0) {
@@ -39,9 +15,7 @@ function randomString(n: number) {
 }
 
 export const Server = {
-  async fetchLocationSuggestions(
-    s: string,
-  ): Promise<ILocationInfo[]> {
+  async fetchLocationSuggestions(s: string): Promise<LocationInfo[]> {
     const result = [];
     for (let i = 0; i < Math.random() * 10; i++) {
       result.push({
@@ -55,7 +29,7 @@ export const Server = {
     return result;
   },
 
-  async fetchProducts(): Promise<IProduct[]> {
+  async fetchProducts(): Promise<ProductSnapshot[]> {
     await wait(1);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);

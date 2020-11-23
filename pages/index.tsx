@@ -1,40 +1,33 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/router';
-import { useStore } from '../store';
+import { useStore } from '../models/root-store';
 
 const Home = observer(() => {
-  const store = useStore();
+  const { locationStore } = useStore();
+  const { apiGetLocationSuggestions, locationSuggestions, setCurrentLocation } = locationStore;
+
   const router = useRouter();
   const [q, setQ] = useState('');
+  const [_, setLoading] = useState(false);
 
   function onSearchChange(e) {
     setQ(e.target.value);
   }
 
-  function searchForSuggestions(e: React.FormEvent) {
+  async function searchForSuggestions(e: React.FormEvent) {
     e.preventDefault();
-    store.fetchLocationSuggestions(q);
+    setLoading(true);
+    await apiGetLocationSuggestions(q);
+    setLoading(false);
   }
 
   function chooseLocation(location) {
-    return (e) => {
-      e.preventDefault();
-      const cartId = store.startCheckout(location.id);
-      router.push({
-        pathname: '/cart/[cartId]',
-        query: { cartId },
-      });
-    };
+    setCurrentLocation({ ...location });
+    router.push({
+      pathname: '/cart',
+    });
   }
-
-  const locationList = store.locationSuggestions.map((location) => (
-    <li key={location.id}>
-      <a href={'#'} onClick={chooseLocation(location)}>
-        {location.city}, {location.postalCode}
-      </a>
-    </li>
-  ));
 
   return (
     <main>
@@ -43,7 +36,21 @@ const Home = observer(() => {
         <input type="text" value={q} onChange={onSearchChange} />
         <input type="submit" value="search" />
       </form>
-      <ul>{locationList}</ul>
+      <ul>
+        {locationSuggestions.map((location) => {
+          return (
+            <li key={location.id}>
+              <div
+                onClick={() => {
+                  chooseLocation(location);
+                }}
+              >
+                {location.formattedLocation}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </main>
   );
 });
